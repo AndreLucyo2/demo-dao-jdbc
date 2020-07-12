@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +32,55 @@ public class SellerDaoJDBC implements SellerDao {
 	@Override
 	public void insert(Seller obj)
 	{
-		// TODO Auto-generated method stub
+		PreparedStatement st = null;
+		try
+		{
+			st = conn.prepareStatement(
+			"INSERT INTO seller "
+			+ "(Name, Email, BirthDate, BaseSalary, DepartmentId) "
+			+ "VALUES "
+			+ "(?, ?, ?, ?, ?)",
+			Statement.RETURN_GENERATED_KEYS);// Retorna o Id Gerado
+
+			// Pega os dados do obj de entrada e passa para o SQL
+			st.setString(1, obj.getName());
+			st.setString(2, obj.getEmail());
+			st.setDate(3, new java.sql.Date(obj.getBirthDate().getTime()));// Data formatada em SQL
+			st.setDouble(4, obj.getBaseSalary());
+			// Navegar no obj e pega o Id do departanebto:
+			st.setInt(5, obj.getDepartment().getId());
+
+			// Pega o numero de linhas afetadas:
+			int rowsAffected = st.executeUpdate();
+
+			// Se for afetado mais de uma linha
+			if (rowsAffected > 0)
+			{
+				ResultSet rs = st.getGeneratedKeys();
+				if (rs.next())
+				{
+					//Peg o ID gerado:
+					int id = rs.getInt(1);
+					//Fica populado com os dados e adiciona o ID gerado
+					obj.setId(id);
+				}
+				//Libera memoria:
+				DB.closeResultSet(rs);
+			}
+			else
+			{
+				//Se nao afetou nenhuma linha, lança exceção:
+				throw new DbException("Unexpected error! No rows affected!");
+			}
+		}
+		catch (SQLException e)
+		{
+			throw new DbException(e.getMessage());
+		}
+		finally
+		{
+			DB.closeStatement(st);
+		}
 
 	}
 
@@ -203,7 +252,7 @@ public class SellerDaoJDBC implements SellerDao {
 				list.add(obj);
 
 			}
-			
+
 			return list;
 		}
 		catch (SQLException e)

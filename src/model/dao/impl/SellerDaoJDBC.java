@@ -59,17 +59,17 @@ public class SellerDaoJDBC implements SellerDao {
 				ResultSet rs = st.getGeneratedKeys();
 				if (rs.next())
 				{
-					//Peg o ID gerado:
+					// Peg o ID gerado:
 					int id = rs.getInt(1);
-					//Fica populado com os dados e adiciona o ID gerado
+					// Fica populado com os dados e adiciona o ID gerado
 					obj.setId(id);
 				}
-				//Libera memoria:
+				// Libera memoria:
 				DB.closeResultSet(rs);
 			}
 			else
 			{
-				//Se nao afetou nenhuma linha, lança exceção:
+				// Se nao afetou nenhuma linha, lança exceção:
 				throw new DbException("Unexpected error! No rows affected!");
 			}
 		}
@@ -87,7 +87,34 @@ public class SellerDaoJDBC implements SellerDao {
 	@Override
 	public void update(Seller obj)
 	{
-		// TODO Auto-generated method stub
+		PreparedStatement st = null;
+
+		try
+		{
+			st = conn.prepareStatement(
+			"UPDATE seller "
+			+ "SET Name = ?, Email = ?, BirthDate = ?, BaseSalary = ?, DepartmentId = ? "
+			+ "WHERE Id = ?");
+
+			// Pega os dados do obj de entrada e passa para o SQL
+			st.setString(1, obj.getName());
+			st.setString(2, obj.getEmail());
+			st.setDate(3, new java.sql.Date(obj.getBirthDate().getTime()));
+			st.setDouble(4, obj.getBaseSalary());
+			// Permite alterar o vendedor de departamento
+			st.setInt(5, obj.getDepartment().getId());
+			st.setInt(6, obj.getId());
+
+			st.executeUpdate();
+		}
+		catch (SQLException e)
+		{
+			throw new DbException(e.getMessage());
+		}
+		finally
+		{
+			DB.closeStatement(st);
+		}
 
 	}
 

@@ -35,15 +35,22 @@ public class Program {
 		{
 			System.out.println(obj);
 		}
-		
+
 		System.out.println("\n=== TEST 4: seller insert ===============================================================");
-		//Cria um objeto vendedor de teste:
+		// Cria um objeto vendedor de teste:
 		Seller newSeller = new Seller(null, "Greg", "greg@gmail.com", new Date(), 4000.0, department);
-		//Faz o insert:
+		// Faz o insert:
 		sellerDao.insert(newSeller);
-		//Retorna o que foi inserido:
+		// Retorna o que foi inserido:
 		System.out.println("Inserted! New id = " + newSeller.getId());
-		
+
+		System.out.println("\n=== TEST 5: seller update Alterando o nome.. ============================================");
+		//Carrega um vendedor por exemplo:
+		seller = sellerDao.findById(1);
+		//altera o nome
+		seller.setName("Martha Waine");
+		sellerDao.update(seller);
+		System.out.println("Update completed");
 
 	}
 }

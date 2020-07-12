@@ -121,7 +121,32 @@ public class SellerDaoJDBC implements SellerDao {
 	@Override
 	public void deleteById(Integer id)
 	{
-		// TODO Auto-generated method stub
+		PreparedStatement st = null;
+		try
+		{
+			st = conn.prepareStatement("DELETE FROM seller WHERE Id = ?");
+
+			st.setInt(1, id);
+
+			// Pega o numero de linhas afetadas:
+			int rowsAffected = st.executeUpdate();
+
+			// Se não for afetado nenhuma linha significa que o Id nao existe
+			if (rowsAffected == 0)
+			{
+				// Se nao afetou nenhuma linha, lança exceção:
+				throw new DbException("Id informado nao encontrado! No rows affected!");
+			}
+
+		}
+		catch (SQLException e)
+		{
+			throw new DbException(e.getMessage());
+		}
+		finally
+		{
+			DB.closeStatement(st);
+		}
 
 	}
 

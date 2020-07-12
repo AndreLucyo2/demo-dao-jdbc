@@ -156,9 +156,65 @@ public class SellerDaoJDBC implements SellerDao {
 	@Override
 	public List<Seller> findAll()
 	{
+		PreparedStatement st = null;
+		ResultSet rs = null;
+		try
+		{
+			st = conn.prepareStatement(
+			"SELECT seller.*,department.Name as DepName "
+			+ "FROM seller INNER JOIN department "
+			+ "ON seller.DepartmentId = department.Id "
+			+ "ORDER BY Name");
 
-		// TODO Auto-generated method stub
-		return null;
+			rs = st.executeQuery();
+
+			// Declaração das listas:
+			List<Seller> list = new ArrayList<>();
+
+			// Ver seção 19:
+			// Extrutura Map de chave e valor: Vazia
+			// Chave=Id e valor= obj departamento
+			// Adiciona uma chave e um obj departamento a cada loop
+			// não permite repetição:
+			Map<Integer, Department> map = new HashMap<>();
+
+			// Percorre enquanto tiver valores:
+			while (rs.next())
+			{
+				// Controle para não repetir o departamento:
+				// Isso é necessario nao que seja instanciado na memoria apenas um obj, e os varios vendedores
+				// aponem para o mesmo
+				// caso tenha mais de um vendedor para o mesmo departamento
+				// Testa se o pdepartamento ja exite: Pega o Id do ResultSet: se não existe ainda, retorna null
+				Department dep = map.get(rs.getInt("DepartmentId"));
+				// se for null:
+				if (dep == null)
+				{
+					// Instancia o Departamento caso ainda nao esteja o Map:
+					dep = instantiateDepartment(rs);
+
+					// Salva o obj no Map com chave, para que da proxima vez no teste, valide que ja existe este Id
+					map.put(rs.getInt("DepartmentId"), dep);
+
+				}
+
+				// instancia apenas um departamento para varios vendedores:
+				Seller obj = instantiateSeller(rs, dep);
+				list.add(obj);
+
+			}
+			
+			return list;
+		}
+		catch (SQLException e)
+		{
+			throw new DbException(e.getMessage());
+		}
+		finally
+		{
+			DB.closeStatement(st);
+			DB.closeResultSet(rs);
+		}
 
 	}
 
